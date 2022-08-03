@@ -1,25 +1,13 @@
-CREATE OR REPLACE FUNCTION public.busdata_notify_trigger()
-    RETURNS trigger
-    LANGUAGE 'plpgsql'
-    COST 100
-    VOLATILE NOT LEAKPROOF
-AS $BODY$
- 
+CREATE or REPLACE FUNCTION busdata_notify_trigger() 
+RETURNS trigger 
+AS 
+$$ 
+DECLARE 
 BEGIN
 PERFORM pg_notify (CAST ('update_notification' AS text), row_to_json(NEW)::text);
-RETURN NEW;
-
+    RETURN new;
     END;
+    $$ LANGUAGE plpgsql;
     
-$BODY$;
-
-ALTER FUNCTION public.busdata_notify_trigger()
-    OWNER TO postgres;
-
-
-//create trigger
-CREATE TRIGGER test_table_update_trigger
-    AFTER UPDATE 
-    ON public.busdata
-    FOR EACH ROW
-    EXECUTE FUNCTION public.busdata_notify_trigger();
+    CREATE TRIGGER test_table_update_trigger AFTER UPDATE ON busdata
+    FOR EACH ROW EXECUTE PROCEDURE busdata_notify_trigger();
